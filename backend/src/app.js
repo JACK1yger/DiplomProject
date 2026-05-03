@@ -2,6 +2,8 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 
+const sequelize = require("./db");
+
 const authRoutes = require("./routes/auth.routes");
 const fileRoutes = require("./routes/file.routes");
 const postsRoutes = require("./routes/posts.routes");
@@ -29,6 +31,11 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: "Server error" });
 });
 
-app.listen(5000, () => {
-  console.log("Server running on port 5000");
+// 💣 ВАЖНО: синхронизация БД перед запуском сервера
+sequelize.sync().then(() => {
+  console.log("DB connected");
+
+  app.listen(5000, () => {
+    console.log("Server running on port 5000");
+  });
 });

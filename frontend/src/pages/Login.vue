@@ -1,27 +1,22 @@
 <template>
   <div>
-    <h2>Login</h2>
-
-    <input v-model="email" placeholder="Email" />
-    <input v-model="password" type="password" placeholder="Password" />
-
+    <input v-model="email" placeholder="email" />
+    <input v-model="password" type="password" placeholder="password" />
     <button @click="login">Login</button>
-
-    <p v-if="error" style="color:red">{{ error }}</p>
   </div>
 </template>
 
 <script setup>
 import { ref } from "vue";
 import api from "../api/axios";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
 
 const email = ref("");
 const password = ref("");
-const error = ref("");
 
 const login = async () => {
-  error.value = "";
-
   try {
     const res = await api.post("/auth/login", {
       email: email.value,
@@ -29,11 +24,9 @@ const login = async () => {
     });
 
     localStorage.setItem("token", res.data.token);
-
-    // 👉 ВАЖНО: переход в админку
-    window.location.href = "/admin";
-  } catch (e) {
-    error.value = "Неверный логин или пароль";
+    router.push("/admin");
+  } catch {
+    alert("Неверный логин");
   }
 };
 </script>

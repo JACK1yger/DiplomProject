@@ -1,10 +1,9 @@
 const bcrypt = require("bcrypt");
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const User = require("../models/User");
 const { generateToken } = require("../utils/jwt");
 
 exports.register = async (email, password) => {
-  const existingUser = await prisma.user.findUnique({
+  const existingUser = await User.findOne({
     where: { email },
   });
 
@@ -14,15 +13,12 @@ exports.register = async (email, password) => {
 
   const hash = await bcrypt.hash(password, 10);
 
-  const user = await prisma.user.create({
-    data: {
-      email,
-      password: hash,
-      role: "USER",
-    },
+  const user = await User.create({
+    email,
+    password: hash,
+    role: "USER",
   });
 
-  // ВАЖНО: не отдаём пароль в токен
   return generateToken({
     id: user.id,
     email: user.email,
@@ -31,7 +27,7 @@ exports.register = async (email, password) => {
 };
 
 exports.login = async (email, password) => {
-  const user = await prisma.user.findUnique({
+  const user = await User.findOne({
     where: { email },
   });
 
@@ -45,7 +41,6 @@ exports.login = async (email, password) => {
     throw new Error("Wrong password");
   }
 
-  // чистый payload без пароля
   return generateToken({
     id: user.id,
     email: user.email,

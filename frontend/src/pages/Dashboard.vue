@@ -1,12 +1,3 @@
-<template>
-  <div>
-    <input type="file" @change="upload" />
-    <div v-for="file in files" :key="file.id">
-      {{ file.name }}
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { ref, onMounted } from "vue";
 import api from "../api/axios";
@@ -17,19 +8,19 @@ const upload = async (e) => {
   const formData = new FormData();
   formData.append("file", e.target.files[0]);
 
-  await api.post("/files/upload", formData, {
-    headers: {
-      Authorization: "Bearer " + localStorage.getItem("token"),
-    },
-  });
+  try {
+    await api.post("/files/upload", formData);
+  } catch (e) {
+    console.log("Upload error", e);
+  }
 };
 
 onMounted(async () => {
-  const res = await api.get("/files", {
-    headers: {
-      Authorization: "Bearer " + localStorage.getItem("token"),
-    },
-  });
-  files.value = res.data;
+  try {
+    const res = await api.get("/files");
+    files.value = res.data;
+  } catch (e) {
+    console.log("Files load error:", e);
+  }
 });
 </script>
