@@ -7,5 +7,7 @@ const upload = multer({ dest: "uploads/" });
 
 router.get("/", auth, controller.getAll);
 router.post("/upload", auth, upload.single("file"), controller.upload);
+router.get("/", auth, controller.getAll);
+router.post("/upload", auth, upload.single("file"), controller.upload);
 
 module.exports = router;
