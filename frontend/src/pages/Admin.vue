@@ -1,34 +1,43 @@
 <template>
-  <div>
-    <h1>Admin Panel</h1>
+  <div class="admin">
 
-    <button @click="logout">Logout</button>
+    <header class="topbar">
+      <h1>CMS Admin Panel</h1>
+      <button @click="logout">Logout</button>
+    </header>
 
-    <hr />
+    <div class="grid">
 
-    <!-- POSTS -->
-    <h2>Posts</h2>
+      <!-- POSTS -->
+      <section class="card">
+        <h2>Posts</h2>
 
-    <input v-model="title" placeholder="title" />
-    <textarea v-model="content" placeholder="content"></textarea>
-    <button @click="createPost">Create post</button>
+        <input v-model="title" placeholder="title" />
+        <textarea v-model="content" placeholder="content"></textarea>
 
-    <div v-for="post in posts" :key="post.id">
-      <b>{{ post.title }}</b>
-      <p>{{ post.content }}</p>
-      <button @click="deletePost(post.id)">Delete</button>
+        <button @click="createPost">Create</button>
+
+        <div v-for="post in posts" :key="post.id" class="item">
+          <b>{{ post.title }}</b>
+          <p>{{ post.content }}</p>
+
+          <button @click="deletePost(post.id)">Delete</button>
+        </div>
+      </section>
+
+      <!-- FILES -->
+      <section class="card">
+        <h2>Files</h2>
+
+        <input type="file" @change="upload" />
+
+        <div v-for="file in files" :key="file.id" class="item">
+          {{ file.name }}
+        </div>
+      </section>
+
     </div>
 
-    <hr />
-
-    <!-- FILES -->
-    <h2>Files</h2>
-
-    <input type="file" @change="upload" />
-
-    <div v-for="file in files" :key="file.id">
-      {{ file.name }}
-    </div>
   </div>
 </template>
 
@@ -45,26 +54,28 @@ const files = ref([]);
 const title = ref("");
 const content = ref("");
 
-// AUTH GUARD
+// 🔐 auth guard
 onMounted(() => {
   if (!localStorage.getItem("token")) {
     router.push("/login");
   }
 });
 
-// LOAD DATA
-const loadPosts = async () => {
-  const res = await api.get("/posts");
-  posts.value = res.data;
+// 📦 загрузка данных
+const load = async () => {
+  const [postsRes, filesRes] = await Promise.all([
+    api.get("/posts"),
+    api.get("/files"),
+  ]);
+
+  posts.value = postsRes.data;
+  files.value = filesRes.data;
 };
 
-const loadFiles = async () => {
-  const res = await api.get("/files");
-  files.value = res.data;
-};
-
-// POSTS
+// ➕ create post
 const createPost = async () => {
+  if (!title.value || !content.value) return;
+
   await api.post("/posts", {
     title: title.value,
     content: content.value,
@@ -73,32 +84,63 @@ const createPost = async () => {
   title.value = "";
   content.value = "";
 
-  loadPosts();
+  await load();
 };
 
+// 🗑 delete post
 const deletePost = async (id) => {
   await api.delete(`/posts/${id}`);
-  loadPosts();
+  await load();
 };
 
-// FILES
+// 📁 upload file
 const upload = async (e) => {
   const formData = new FormData();
   formData.append("file", e.target.files[0]);
 
   await api.post("/files/upload", formData);
 
-  loadFiles();
+  await load();
 };
 
-// LOGOUT
+// 🚪 logout
 const logout = () => {
   localStorage.removeItem("token");
   router.push("/login");
 };
 
-onMounted(() => {
-  loadPosts();
-  loadFiles();
-});
+// 🚀 init
+onMounted(load);
 </script>
+
+<style>
+.admin {
+  padding: 20px;
+  font-family: sans-serif;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.card {
+  border: 1px solid #ddd;
+  padding: 15px;
+  border-radius: 10px;
+}
+
+.item {
+  margin-top: 10px;
+  padding: 5px;
+  border-bottom: 1px solid #eee;
+}
+</style>

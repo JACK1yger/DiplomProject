@@ -3,6 +3,7 @@
     <input v-model="email" placeholder="email" />
     <input v-model="password" type="password" placeholder="password" />
     <button @click="login">Login</button>
+    <button @click="register">Register</button>
   </div>
 </template>
 
@@ -28,5 +29,13 @@ const login = async () => {
   } catch {
     alert("Неверный логин");
   }
+};
+
+const register = async () => {
+  await api.post("/auth/register", {
+    email: "admin@test.com",
+    password: "1234",
+  });
+  alert("User created");
 };
 </script>

@@ -1,5 +1,5 @@
 const { DataTypes } = require("sequelize");
-const sequelize = require("../db");
+const sequelize = require("../config/db");
 
 const File = sequelize.define("File", {
   id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },

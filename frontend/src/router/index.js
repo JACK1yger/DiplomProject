@@ -5,7 +5,8 @@ import Dashboard from '../pages/Dashboard.vue'
 const routes = [
   { path: '/', redirect: '/login' },
   { path: '/login', component: Login },
-  { path: '/admin', component: Dashboard }
+  { path: '/admin', component: Dashboard },
+  { path: "/posts", component: () => import("../pages/Posts.vue")}
 ]
 
 const router = createRouter({
